@@ -1,73 +1,45 @@
 #include <Arduino.h>
-#include <WiFi.h>
-#include <WebServer.h>
-#include <LittleFS.h>
+#include <Adafruit_NeoPixel.h>
+//Библиотеки
 
-const char* ssid = "TP-Link_14D8";
-const char* password = "85814110";
+#define LED_PIN   48
+#define LED_COUNT 1
+//выбор пина и количества светодиодов
 
-IPAddress local_IP(192, 168, 0, 50);
-IPAddress gateway(192, 168, 0, 1);
-IPAddress subnet(255, 255, 255, 0);
-IPAddress dns(192, 168, 0, 1);
+Adafruit_NeoPixel led(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+//создание объекта для управления светодиодами
 
-WebServer server(80);
+void ledOn()  { led.setPixelColor(0, led.Color(255, 165, 255)); led.show(); } // оранжевый
+void ledOff() { led.setPixelColor(0, 0);                    led.show(); }
 
-void setup()
-{
+void setup() {
+    led.begin();
+    led.setBrightness(80);
+    ledOff();
     Serial.begin(115200);
     delay(1000);
-
-    Serial.println();
-    Serial.println("==============================");
-    Serial.println("RONGO NODE");
-    Serial.println("Web test");
-    Serial.println("==============================");
-
-    // LittleFS
-    if (!LittleFS.begin(true))
-    {
-        Serial.println("LittleFS ERROR");
-        while (true)
-        {
-            delay(1000);
-        }
-    }
-
-    Serial.println("LittleFS OK");
-
-    // Wi-Fi
-    if (!WiFi.config(local_IP, gateway, subnet, dns))
-    {
-        Serial.println("WiFi config failed");
-    }
-
-    WiFi.begin(ssid, password);
-
-    Serial.print("Connecting to WiFi");
-
-    while (WiFi.status() != WL_CONNECTED)
-    {
-        delay(500);
-        Serial.print(".");
-    }
-
-    Serial.println();
-    Serial.println("WiFi OK");
-
-    Serial.print("IP: ");
-    Serial.println(WiFi.localIP());
-
-    // Web server
-    server.serveStatic("/", LittleFS, "/index.html");
-
-    server.begin();
-
-    Serial.println("Web server started");
-    Serial.println("==============================");
+    Serial.println("SOS Blink Test Started");
 }
 
-void loop()
-{
-    server.handleClient();
+void dot() {
+    ledOn();
+    delay(200);
+    ledOff();
+    delay(200);
+}
+
+void dash() {
+    ledOn();
+    delay(600);
+    ledOff();
+    delay(200);
+}
+
+void loop() {
+    dot(); dot(); dot();
+    delay(400);
+    dash(); dash(); dash();
+    delay(400);
+    dot(); dot(); dot();
+    delay(2000);
 }

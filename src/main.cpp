@@ -9,7 +9,7 @@
 Adafruit_NeoPixel led(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 //создание объекта для управления светодиодами
 
-void ledOn()  { led.setPixelColor(0, led.Color(255, 165, 255)); led.show(); } // оранжевый
+void ledOn()  { led.setPixelColor(0, led.Color(0, 165, 255)); led.show(); } // оранжевый
 void ledOff() { led.setPixelColor(0, 0);                    led.show(); }
 
 void setup() {

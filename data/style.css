@@ -1,0 +1,31 @@
+body {
+    background: black;
+    color: #00ff00;
+    font-family: monospace;
+    font-size: 24px;
+    padding: 24px;
+}
+
+h1 {
+    margin-top: 0;
+    font-size: 32px;
+}
+
+.row {
+    margin: 8px 0;
+}
+
+.label {
+    display: inline-block;
+    width: 200px;
+    color: #00aa00;
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid #003300;
+    margin: 20px 0;
+}
+
+#sensor.ok    { color: #00ff00; }
+#sensor.error { color: #ff3333; }

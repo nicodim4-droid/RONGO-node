@@ -1,4 +1,3 @@
-
 //Подключенные библиотеки
 #include <Arduino.h>
 #include <WiFi.h>
@@ -6,8 +5,12 @@
 #include <Adafruit_NeoPixel.h>
 #include <Wire.h>
 #include <Adafruit_SHT4x.h>
+#include <LittleFS.h>
 
-// СВЕТОДИОД (WS2812 на GPIO48) 
+// Версия прошивки
+#define FW_VERSION "0.2.0"
+
+// СВЕТОДИОД (WS2812 на GPIO48)
 #define LED_PIN   48
 #define LED_COUNT 1
 Adafruit_NeoPixel led(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
@@ -17,7 +20,7 @@ Adafruit_SHT4x sht4 = Adafruit_SHT4x();
 #define SDA_PIN 9
 #define SCL_PIN 10
 
-// ТОЧКА ДОСТУПА 
+// ТОЧКА ДОСТУПА
 const char* ap_ssid     = "RONGO_NODE_AP";
 const char* ap_password = "12345678";
 IPAddress local_IP(192, 168, 4, 1);
@@ -25,47 +28,47 @@ IPAddress gateway (192, 168, 4, 1);
 IPAddress subnet  (255, 255, 255, 0);
 WebServer server(80);
 
-// Сигнал светодиода не блокирующий процессор "НЕБЛОКИРУЮЩИЙ SOS" 
-// Паттерн: длительности фаз в мс. Знак: >0 — LED горит, <0 — LED погашен.
-// ... --- ...
-const int   sosPattern[] = {
-    200, -200,  200, -200,  200, -600,   // ... и пауза между буквами
-    600, -200,  600, -200,  600, -600,   // --- и пауза между буквами
-    200, -200,  200, -200,  200, -2000   // ... и длинная пауза перед повтором
-};
-const int   sosLength = sizeof(sosPattern) / sizeof(sosPattern[0]);
-int         sosIndex  = 0;
-unsigned long sosLast = 0;
-bool        sosLedOn  = false;
+// Статус датчика
+bool sht4_ok = false;
 
-void ledOn()  { led.setPixelColor(0, led.Color(0, 120, 0)); led.show(); } // зелёный
+// ====== МИГАЛКА (неблокирующая) ======
+const unsigned long BLINK_PERIOD = 250;
+unsigned long lastBlink = 0;
+bool          ledState  = false;
+
+void ledOn()  { led.setPixelColor(0, led.Color(0, 0, 120)); led.show(); } // синий
 void ledOff() { led.setPixelColor(0, 0);                    led.show(); }
 
-void sosTick() {
+void blinkTick() {
     unsigned long now = millis();
-    if (now - sosLast < (unsigned long)abs(sosPattern[sosIndex])) return;
-
-    sosLast = now;
-    sosIndex = (sosIndex + 1) % sosLength;
-
-    int phase = sosPattern[sosIndex];
-    if (phase > 0) { ledOn();  sosLedOn = true;  }
-    else           { ledOff(); sosLedOn = false; }
+    if (now - lastBlink >= BLINK_PERIOD) {
+        lastBlink = now;
+        ledState = !ledState;
+        if (ledState) ledOn();
+        else          ledOff();
+    }
 }
 
-// Вебморда
-void handleRoot() {
+// ====== ВЕБ ======
+void handleData() {
     sensors_event_t humidity, temp;
-    sht4.getEvent(&humidity, &temp);
+    bool ok = sht4.getEvent(&humidity, &temp);
 
-    String html = "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>RONGO NODE</title></head>";
-    html += "<body style='background:black; color:#00ff00; font-family:monospace; font-size:24px;'>";
-    html += "<h1>RONGO NODE ONLINE</h1>";
-    html += "<p>Temperature: " + String(temp.temperature, 2) + " &deg;C</p>";
-    html += "<p>Humidity: "    + String(humidity.relative_humidity, 2) + " %</p>";
-    html += "<p>Uptime: "      + String(millis() / 1000) + " s</p>";
-    html += "</body></html>";
-    server.send(200, "text/html", html);
+    // Если датчик не читается — вернём null вместо чисел
+    String tempStr = ok ? String(temp.temperature, 2)      : "null";
+    String humStr  = ok ? String(humidity.relative_humidity, 2) : "null";
+
+    String json = "{";
+    json += "\"temp\":"   + tempStr + ",";
+    json += "\"hum\":"    + humStr  + ",";
+    json += "\"uptime\":" + String(millis() / 1000) + ",";
+    json += "\"ip\":\""   + WiFi.softAPIP().toString() + "\",";
+    json += "\"rssi\":"   + String(WiFi.RSSI()) + ",";
+    json += "\"fw\":\""   + String(FW_VERSION) + "\",";
+    json += "\"sensor\":" + String(ok ? "true" : "false");
+    json += "}";
+
+    server.send(200, "application/json", json);
 }
 
 void handleNotFound() {
@@ -84,10 +87,19 @@ void setup() {
     Wire.begin(SDA_PIN, SCL_PIN);
     if (!sht4.begin()) {
         Serial.println("Couldn't find SHT4x");
+        sht4_ok = false;
     } else {
         Serial.println("SHT4x found!");
         sht4.setPrecision(SHT4X_HIGH_PRECISION);
         sht4.setHeater(SHT4X_NO_HEATER);
+        sht4_ok = true;
+    }
+
+    // LittleFS
+    if (!LittleFS.begin(true)) {
+        Serial.println("LittleFS mount failed!");
+    } else {
+        Serial.println("LittleFS mounted");
     }
 
     // Wi-Fi AP
@@ -97,20 +109,26 @@ void setup() {
     Serial.print("AP IP: ");
     Serial.println(WiFi.softAPIP());
 
-    // Веб-сервер
-    server.on("/", HTTP_GET, handleRoot);
+    // Веб-сервер: статика из LittleFS
+    server.serveStatic("/",         LittleFS, "/index.html");
+    server.serveStatic("/style.css", LittleFS, "/style.css");
+    server.serveStatic("/app.js",   LittleFS, "/app.js");
+
+    // API
+    server.on("/data", HTTP_GET, handleData);
+
     server.onNotFound(handleNotFound);
     server.begin();
     Serial.println("Web server started");
 
-    // Стартуем SOS
-    sosLast = millis();
+    // Стартуем мигалку
+    lastBlink = millis();
     ledOn();
 }
 
 void loop() {
-    server.handleClient();   // обслуживаем клиентов
-    sosTick();               // мигаем SOS (не блокирует)
+    server.handleClient();
+    blinkTick();
 
     // Раз в 5 секунд — лог SHT40 в Serial
     static unsigned long lastLog = 0;

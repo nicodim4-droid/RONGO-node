@@ -1,143 +1,97 @@
-//Подключенные библиотеки
 #include <Arduino.h>
-#include <WiFi.h>
-#include <WebServer.h>
-#include <Adafruit_NeoPixel.h>
-#include <Wire.h>
-#include <Adafruit_SHT4x.h>
 #include <LittleFS.h>
+#include <WebServer.h>
+#include <WiFi.h>
 
-// Версия прошивки
-#define FW_VERSION "0.2.0"
+namespace {
 
-// СВЕТОДИОД (WS2812 на GPIO48)
-#define LED_PIN   48
-#define LED_COUNT 1
-Adafruit_NeoPixel led(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+constexpr char AP_SSID[] = "RONGO";
+constexpr char AP_PASSWORD[] = "123456789";
+constexpr char INDEX_PATH[] = "/index.html";
 
-// SHT40 (I2C)
-Adafruit_SHT4x sht4 = Adafruit_SHT4x();
-#define SDA_PIN 9
-#define SCL_PIN 10
+const IPAddress localIp(192, 168, 4, 1);
+const IPAddress gateway(192, 168, 4, 1);
+const IPAddress subnet(255, 255, 255, 0);
 
-// ТОЧКА ДОСТУПА
-const char* ap_ssid     = "RONGO_NODE_AP";
-const char* ap_password = "12345678";
-IPAddress local_IP(192, 168, 4, 1);
-IPAddress gateway (192, 168, 4, 1);
-IPAddress subnet  (255, 255, 255, 0);
 WebServer server(80);
+bool littleFsReady = false;
 
-// Статус датчика
-bool sht4_ok = false;
-
-// ====== МИГАЛКА (неблокирующая) ======
-const unsigned long BLINK_PERIOD = 250;
-unsigned long lastBlink = 0;
-bool          ledState  = false;
-
-void ledOn()  { led.setPixelColor(0, led.Color(0, 0, 120)); led.show(); } // синий
-void ledOff() { led.setPixelColor(0, 0);                    led.show(); }
-
-void blinkTick() {
-    unsigned long now = millis();
-    if (now - lastBlink >= BLINK_PERIOD) {
-        lastBlink = now;
-        ledState = !ledState;
-        if (ledState) ledOn();
-        else          ledOff();
-    }
+void logRequest(const char* path) {
+    Serial.print("HTTP GET ");
+    Serial.print(path);
+    Serial.print(" from ");
+    Serial.println(server.client().remoteIP());
 }
 
-// ====== ВЕБ ======
-void handleData() {
-    sensors_event_t humidity, temp;
-    bool ok = sht4.getEvent(&humidity, &temp);
+void handleRoot() {
+    logRequest("/");
 
-    // Если датчик не читается — вернём null вместо чисел
-    String tempStr = ok ? String(temp.temperature, 2)      : "null";
-    String humStr  = ok ? String(humidity.relative_humidity, 2) : "null";
+    if (!littleFsReady) {
+        server.send(500, "text/plain", "LittleFS is unavailable. Check Serial Monitor.");
+        return;
+    }
 
-    String json = "{";
-    json += "\"temp\":"   + tempStr + ",";
-    json += "\"hum\":"    + humStr  + ",";
-    json += "\"uptime\":" + String(millis() / 1000) + ",";
-    json += "\"ip\":\""   + WiFi.softAPIP().toString() + "\",";
-    json += "\"rssi\":"   + String(WiFi.RSSI()) + ",";
-    json += "\"fw\":\""   + String(FW_VERSION) + "\",";
-    json += "\"sensor\":" + String(ok ? "true" : "false");
-    json += "}";
+    File indexFile = LittleFS.open(INDEX_PATH, "r");
+    if (!indexFile) {
+        Serial.println("ERROR: /index.html is missing from LittleFS.");
+        server.send(500, "text/plain", "index.html is missing from LittleFS.");
+        return;
+    }
 
-    server.send(200, "application/json", json);
+    server.streamFile(indexFile, "text/html");
+    indexFile.close();
+}
+
+void handleStatus() {
+    logRequest("/status");
+    server.send(200, "application/json", "{\"device\":\"RONGO\",\"status\":\"online\"}");
 }
 
 void handleNotFound() {
+    Serial.print("HTTP 404 ");
+    Serial.println(server.uri());
     server.send(404, "text/plain", "Not found");
 }
 
+} // namespace
+
 void setup() {
     Serial.begin(115200);
-    delay(1000);
+    delay(500);
+    Serial.println();
+    Serial.println("Starting RONGO ESP32 web server...");
 
-    led.begin();
-    led.setBrightness(80);
-    ledOff();
-
-    // I2C + SHT40
-    Wire.begin(SDA_PIN, SCL_PIN);
-    if (!sht4.begin()) {
-        Serial.println("Couldn't find SHT4x");
-        sht4_ok = false;
+    littleFsReady = LittleFS.begin();
+    if (littleFsReady) {
+        Serial.println("LittleFS mounted successfully.");
+        if (!LittleFS.exists(INDEX_PATH)) {
+            Serial.println("ERROR: /index.html is missing from LittleFS.");
+        }
     } else {
-        Serial.println("SHT4x found!");
-        sht4.setPrecision(SHT4X_HIGH_PRECISION);
-        sht4.setHeater(SHT4X_NO_HEATER);
-        sht4_ok = true;
+        Serial.println("ERROR: LittleFS mount failed.");
     }
 
-    // LittleFS
-    if (!LittleFS.begin(true)) {
-        Serial.println("LittleFS mount failed!");
-    } else {
-        Serial.println("LittleFS mounted");
-    }
-
-    // Wi-Fi AP
     WiFi.mode(WIFI_AP);
-    WiFi.softAPConfig(local_IP, gateway, subnet);
-    WiFi.softAP(ap_ssid, ap_password);
-    Serial.print("AP IP: ");
-    Serial.println(WiFi.softAPIP());
+    if (!WiFi.softAPConfig(localIp, gateway, subnet)) {
+        Serial.println("ERROR: Failed to configure the Wi-Fi access point IP.");
+    }
+    if (WiFi.softAP(AP_SSID, AP_PASSWORD)) {
+        Serial.println("Wi-Fi access point started: RONGO");
+        Serial.print("IP address: ");
+        Serial.println(WiFi.softAPIP());
+    } else {
+        Serial.println("ERROR: Failed to start the Wi-Fi access point.");
+    }
 
-    // Веб-сервер: статика из LittleFS
-    server.serveStatic("/",         LittleFS, "/index.html");
+    server.on("/", HTTP_GET, handleRoot);
+    server.on("/status", HTTP_GET, handleStatus);
     server.serveStatic("/style.css", LittleFS, "/style.css");
-    server.serveStatic("/app.js",   LittleFS, "/app.js");
-
-    // API
-    server.on("/data", HTTP_GET, handleData);
-
+    server.serveStatic("/app.js", LittleFS, "/app.js");
     server.onNotFound(handleNotFound);
     server.begin();
-    Serial.println("Web server started");
-
-    // Стартуем мигалку
-    lastBlink = millis();
-    ledOn();
+    Serial.println("HTTP server started on port 80.");
 }
 
 void loop() {
     server.handleClient();
-    blinkTick();
-
-    // Раз в 5 секунд — лог SHT40 в Serial
-    static unsigned long lastLog = 0;
-    if (millis() - lastLog > 5000) {
-        lastLog = millis();
-        sensors_event_t humidity, temp;
-        if (sht4.getEvent(&humidity, &temp)) {
-            Serial.print("Temp: "); Serial.print(temp.temperature, 2); Serial.print(" C  ");
-            Serial.print("Hum: ");  Serial.print(humidity.relative_humidity, 2); Serial.println(" %");
-        }
-    }
 }

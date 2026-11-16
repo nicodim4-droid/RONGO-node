@@ -1,25 +1,132 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RONGO NODE</title>
-    <link rel="stylesheet" href="/style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11161d">
+  <title>RONGO SCADA — Обзор системы</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
 </head>
 <body>
-    <h1>RONGO NODE ONLINE</h1>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="RONGO SCADA — главная">
+        <span class="brand-mark" aria-hidden="true">R</span>
+        <span class="brand-copy">
+          <strong>RONGO</strong>
+          <span>SCADA</span>
+        </span>
+      </a>
+      <div class="topbar-meta">
+        <span class="connection-label"><span class="connection-dot"></span> Локальная сеть</span>
+        <span class="topbar-divider" aria-hidden="true"></span>
+        <time id="clock">--:--:--</time>
+      </div>
+    </header>
 
-    <div class="row"><span class="label">Temperature:</span> <span id="temp">--</span> °C</div>
-    <div class="row"><span class="label">Humidity:</span>    <span id="hum">--</span> %</div>
-    <div class="row"><span class="label">Uptime:</span>      <span id="uptime">--</span> s</div>
+    <main>
+      <section class="page-heading" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">МОНИТОРИНГ ОБОРУДОВАНИЯ</p>
+          <h1 id="page-title">Обзор системы</h1>
+          <p class="page-description">Состояние устройства и параметры окружающей среды</p>
+        </div>
+        <div class="system-status status-pending" id="system-status" role="status" aria-live="polite">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span class="status-text" id="system-status-text">Подключение...</span>
+        </div>
+      </section>
 
-    <hr>
+      <section class="overview-grid" aria-label="Параметры системы">
+        <article class="metric-card">
+          <div class="metric-heading">
+            <span class="metric-label">Температура</span>
+            <span class="metric-icon" aria-hidden="true">°C</span>
+          </div>
+          <p class="metric-value"><span id="temperature">—</span><span class="metric-unit">°C</span></p>
+          <p class="metric-caption" id="temperature-caption">Ожидание данных датчика</p>
+        </article>
 
-    <div class="row"><span class="label">IP:</span>          <span id="ip">--</span></div>
-    <div class="row"><span class="label">RSSI:</span>        <span id="rssi">--</span> dBm</div>
-    <div class="row"><span class="label">Firmware:</span>    <span id="fw">--</span></div>
-    <div class="row"><span class="label">Sensor:</span>      <span id="sensor">--</span></div>
+        <article class="metric-card">
+          <div class="metric-heading">
+            <span class="metric-label">Влажность</span>
+            <span class="metric-icon" aria-hidden="true">%</span>
+          </div>
+          <p class="metric-value"><span id="humidity">—</span><span class="metric-unit">%</span></p>
+          <p class="metric-caption" id="humidity-caption">Ожидание данных датчика</p>
+        </article>
 
-    <script src="/app.js"></script>
+        <article class="metric-card">
+          <div class="metric-heading">
+            <span class="metric-label">Время работы</span>
+            <span class="metric-icon icon-text" aria-hidden="true">UP</span>
+          </div>
+          <p class="metric-value metric-value-text" id="uptime">—</p>
+          <p class="metric-caption">С момента запуска устройства</p>
+        </article>
+
+        <article class="metric-card">
+          <div class="metric-heading">
+            <span class="metric-label">Сигнал Wi-Fi</span>
+            <span class="metric-icon icon-text" aria-hidden="true">RF</span>
+          </div>
+          <p class="metric-value"><span id="rssi">—</span><span class="metric-unit">dBm</span></p>
+          <p class="metric-caption">Уровень сигнала точки доступа</p>
+        </article>
+      </section>
+
+      <section class="details-grid" aria-label="Сведения об устройстве">
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">УСТРОЙСТВО</p>
+              <h2>Состояние оборудования</h2>
+            </div>
+            <span class="state-badge state-pending" id="sensor-status">Ожидание</span>
+          </div>
+          <dl class="device-list">
+            <div class="device-row">
+              <dt>Устройство</dt>
+              <dd id="device-name">RONGO</dd>
+            </div>
+            <div class="device-row">
+              <dt>IP-адрес</dt>
+              <dd id="device-ip">192.168.4.1</dd>
+            </div>
+            <div class="device-row">
+              <dt>Версия прошивки</dt>
+              <dd id="firmware">—</dd>
+            </div>
+            <div class="device-row">
+              <dt>Датчик среды</dt>
+              <dd id="sensor-detail">Нет данных</dd>
+            </div>
+          </dl>
+        </article>
+
+        <article class="panel update-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">СВЯЗЬ</p>
+              <h2>Обновление данных</h2>
+            </div>
+            <span class="refresh-mark" aria-hidden="true">↻</span>
+          </div>
+          <p class="update-description">Показания обновляются автоматически при подключении к устройству.</p>
+          <div class="update-footer">
+            <span>Последнее обновление</span>
+            <time id="last-update">Ожидание</time>
+          </div>
+          <p class="connection-error" id="connection-error" role="status" hidden></p>
+        </article>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>RONGO SCADA</span>
+      <span>Панель локального мониторинга</span>
+    </footer>
+  </div>
 </body>
 </html>

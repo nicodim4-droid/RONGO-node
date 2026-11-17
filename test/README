@@ -1,11 +1,263 @@
+# RONGO — распределённая сеть ESP32-узлов
 
-This directory is intended for PlatformIO Test Runner and project tests.
+**RONGO** — открытый DIY-проект распределённой сети устройств на базе ESP32. Проект предназначен для создания модульной системы, в которой отдельные узлы собирают данные с датчиков, управляют исполнительными устройствами и обмениваются информацией через общую сеть.
 
-Unit Testing is a software testing method by which individual units of
-source code, sets of one or more MCU program modules together with associated
-control data, usage procedures, and operating procedures, are tested to
-determine whether they are fit for use. Unit testing finds problems early
-in the development cycle.
+Цель проекта — создать доступную для самостоятельной сборки и расширения платформу с открытой аппаратной и программной архитектурой.
 
-More information about PlatformIO Unit Testing:
-- https://docs.platformio.org/en/latest/advanced/unit-testing/index.html
+## Концепция
+
+RONGO строится вокруг двух основных типов устройств:
+
+- **RONGO-node** — автономный узел с датчиками или исполнительными устройствами.
+- **RONGO-master** — управляющий узел, координирующий работу сети и собирающий данные от подключённых узлов.
+
+Каждый узел должен иметь собственную конфигурацию, идентификатор и набор подключённых компонентов.
+
+В перспективе сеть сможет взаимодействовать с внешними системами мониторинга и автоматизации.
+
+## Основные принципы
+
+- Модульность: возможность добавлять новые датчики и исполнительные устройства.
+- Открытость: схемы, программное обеспечение и инструкции доступны для самостоятельной сборки.
+- Расширяемость: возможность создавать узлы под различные задачи.
+- Автономность: отдельные узлы способны выполнять собственные функции независимо от master.
+- Централизованный мониторинг: master собирает и отображает информацию о состоянии сети.
+- Доступность: использование распространённых компонентов и открытых инструментов разработки.
+
+## Аппаратная платформа
+
+Основная платформа проекта — микроконтроллеры ESP32.
+
+Предполагаемая архитектура узла включает:
+
+- ESP32 — контроллер.
+- Датчик или исполнительное устройство.
+- DC-DC преобразователь питания.
+- Интерфейс связи.
+- Подключение к общей линии питания и обмена данными.
+
+В качестве основного проводного интерфейса связи между узлами рассматривается CAN BUS.
+
+## Программная платформа
+
+Текущая разработка использует:
+
+- ESP32-S3
+- Arduino Framework
+- PlatformIO
+- C++
+- WebServer
+- LittleFS
+- HTML / CSS / JavaScript
+
+Встроенный веб-сервер обеспечивает локальный доступ к интерфейсу устройства.
+
+В дальнейшем веб-интерфейс будет развиваться в сторону универсальной SCADA-панели для мониторинга и управления узлами сети.
+
+## Текущее состояние
+
+<ins>Проект находится на ранней стадии разработки.</ins>
+
+На текущем этапе реализуются:
+
+- Базовая прошивка ESP32.
+- Локальный Wi-Fi Access Point.
+- Встроенный HTTP-сервер.
+- Хранение и раздача веб-интерфейса через LittleFS.
+- Начальная SCADA-панель.
+- Разработка универсальной структуры отображения данных узлов.
+
+Следующие направления разработки:
+
+- Интеграция датчиков и исполнительных устройств.
+- Унифицированный API телеметрии.
+- Обмен данными между узлами по CAN BUS.
+- Адресация и идентификация узлов.
+- Реализация master-узла.
+- Автоматизированная сборка и тестирование конфигураций.
+
+## Структура проекта
+
+Основные элементы текущей прошивки:
+
+- `src/` — исходный код прошивки.
+- `data/` — файлы веб-интерфейса для LittleFS.
+- `platformio.ini` — конфигурация сборки PlatformIO.
+
+Структура будет расширяться по мере развития проекта.
+
+## Сборка и прошивка
+
+Для разработки потребуются:
+
+- Visual Studio Code
+- PlatformIO
+- ESP32-S3 DevKitM-1
+- USB-кабель с поддержкой передачи данных
+
+Сборка прошивки:
+
+```bash
+pio run -e RONGO_node
+```
+
+Загрузка прошивки:
+
+```bash
+pio run -e RONGO_node -t upload
+```
+
+Загрузка файловой системы:
+
+```bash
+pio run -e RONGO_node -t uploadfs
+```
+
+Монитор последовательного порта:
+
+```bash
+pio device monitor -e RONGO_node
+```
+
+После запуска устройства оно создаёт Wi-Fi Access Point с именем `RONGO`. В текущей конфигурации веб-интерфейс доступен по адресу:
+
+`http://192.168.4.1`
+
+## Участие в проекте
+
+RONGO — открытый проект, рассчитанный на изучение, самостоятельную сборку и развитие.
+
+Приветствуются идеи новых узлов, датчиков, способов обмена данными, аппаратных решений и улучшения программной архитектуры.
+
+---
+
+# RONGO — Distributed ESP32 Node Network
+
+**RONGO** is an open DIY project focused on building a distributed network of ESP32-based devices. Individual nodes collect sensor data, control external hardware, and exchange information through a shared network.
+
+The goal is to create an accessible, modular platform with an open hardware and software architecture that can be built, modified, and extended by its users.
+
+## Concept
+
+RONGO is designed around two main device types:
+
+- **RONGO-node** — an autonomous device equipped with sensors or actuators.
+- **RONGO-master** — a central controller responsible for coordinating the network and collecting data from connected nodes.
+
+Each node is intended to have its own configuration, identifier, and set of connected components.
+
+The network is planned to support integration with external monitoring and automation systems.
+
+## Core principles
+
+- **Modularity:** add new sensors and actuators without redesigning the entire system.
+- **Openness:** hardware designs, software, and documentation are available for DIY development.
+- **Extensibility:** build specialized nodes for different applications.
+- **Autonomy:** individual nodes can perform their own functions independently of the master.
+- **Centralized monitoring:** the master collects and displays network information.
+- **Accessibility:** use widely available components and open development tools.
+
+## Hardware platform
+
+The primary hardware platform is based on ESP32 microcontrollers.
+
+A typical node is expected to include:
+
+- ESP32 microcontroller.
+- Sensor or actuator.
+- DC-DC power converter.
+- Communication interface.
+- Connection to a shared power and data bus.
+
+CAN BUS is being considered as the primary wired communication interface between nodes.
+
+## Software platform
+
+The current development stack includes:
+
+- ESP32-S3
+- Arduino Framework
+- PlatformIO
+- C++
+- WebServer
+- LittleFS
+- HTML / CSS / JavaScript
+
+The built-in web server provides local access to the device interface.
+
+The web interface is planned to evolve into a universal SCADA-style dashboard for monitoring and controlling network nodes.
+
+## Development status
+
+<ins>The project is currently in its early development stage.</ins>
+
+Current development includes:
+
+- Basic ESP32 firmware.
+- Local Wi-Fi Access Point.
+- Embedded HTTP server.
+- Web interface stored and served through LittleFS.
+- Initial SCADA dashboard.
+- Development of a universal data presentation model for network nodes.
+
+Planned development:
+
+- Sensor and actuator integration.
+- Unified telemetry API.
+- CAN BUS communication between nodes.
+- Node addressing and identification.
+- RONGO-master implementation.
+- Automated firmware configuration, building, and testing.
+
+## Project structure
+
+Main components of the current firmware:
+
+- `src/` — firmware source code.
+- `data/` — web interface files served through LittleFS.
+- `platformio.ini` — PlatformIO build configuration.
+
+The project structure will evolve as development progresses.
+
+## Building and flashing
+
+Requirements:
+
+- Visual Studio Code
+- PlatformIO
+- ESP32-S3 DevKitM-1
+- USB data cable
+
+Build firmware:
+
+```bash
+pio run -e RONGO_node
+```
+
+Upload firmware:
+
+```bash
+pio run -e RONGO_node -t upload
+```
+
+Upload the filesystem image:
+
+```bash
+pio run -e RONGO_node -t uploadfs
+```
+
+Open the serial monitor:
+
+```bash
+pio device monitor -e RONGO_node
+```
+
+After startup, the device creates a Wi-Fi Access Point named `RONGO`. The web interface is currently available at:
+
+`http://192.168.4.1`
+
+## Contributing
+
+RONGO is an open project intended for learning, DIY development, and community contributions.
+
+Ideas for new nodes, sensors, communication methods, hardware designs, and software improvements are welcome.

@@ -1,6 +1,7 @@
 :root {
   color-scheme: dark;
-  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  --profile-font: Inter, "Segoe UI", Arial, sans-serif;
+  --profile-glow: #263548;
   color: #e6ebf2;
   background: #11161d;
   font-synthesis: none;
@@ -17,6 +18,18 @@
   --red: #e17b7b;
 }
 
+:root[data-mode="master"] {
+  --profile-font: "Consolas", "Courier New", monospace;
+  --profile-glow: #39304e;
+  --surface: #1b202c;
+  --surface-raised: #242b3a;
+  --border: #3a4155;
+  --muted: #a4abc0;
+  --subtle: #7d859e;
+  --blue: #b6a0f4;
+  --green: #70d7b4;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -25,8 +38,9 @@ body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
+  font-family: var(--profile-font);
   background:
-    radial-gradient(ellipse at 50% -18%, #263548 0, transparent 47%),
+    radial-gradient(ellipse at 50% -18%, var(--profile-glow) 0, transparent 47%),
     #11161d;
 }
 
@@ -124,6 +138,282 @@ input {
   width: 1px;
   height: 18px;
   background: var(--border);
+}
+
+.language-switch {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.language-switch a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.language-switch a[aria-current="page"] {
+  color: #b7d4f5;
+  font-weight: 600;
+}
+
+.language-switch a:hover {
+  color: #fff;
+}
+
+.brand-name {
+  color: #f0f3f8;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.topbar {
+  gap: 18px;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  color: var(--muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.controller-status {
+  min-height: 30px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  white-space: nowrap;
+}
+
+.controller-status.status-online {
+  color: var(--green);
+}
+
+.controller-status.status-offline {
+  color: var(--red);
+}
+
+.mode-switch {
+  padding: 3px;
+  display: inline-flex;
+  gap: 2px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+}
+
+.mode-button {
+  padding: 5px 7px;
+  border: 0;
+  border-radius: 4px;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.mode-button[aria-pressed="true"] {
+  color: #10161e;
+  background: var(--blue);
+}
+
+.mode-button:focus-visible,
+.language-switch a:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+}
+
+:root[data-mode="master"] .brand-mark {
+  border-color: #675a91;
+  color: #d3c7ff;
+  background: #2b2540;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(250px, 0.85fr);
+  align-items: stretch;
+  gap: 16px;
+}
+
+.tile {
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface);
+}
+
+.tile-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tile-heading .eyebrow {
+  margin-bottom: 7px;
+}
+
+.tile-heading h2 {
+  font-size: 16px;
+}
+
+.node-layout {
+  margin-top: 21px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(210px, 0.9fr);
+  gap: 23px;
+}
+
+.sensor-overview {
+  min-width: 0;
+}
+
+.sensor-kind {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.sensor-kind strong {
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--blue);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+.reading-grid {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.reading {
+  min-width: 0;
+  min-height: 105px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-raised);
+}
+
+.reading-label {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.reading > div {
+  margin-top: 16px;
+  white-space: nowrap;
+}
+
+.reading-value {
+  color: #eff3f8;
+  font-size: clamp(18px, 2.4vw, 29px);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.sensor-state {
+  margin: 13px 0 0;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.sensor-state.status-online {
+  color: var(--green);
+}
+
+.sensor-state.status-error,
+.sensor-state.status-offline {
+  color: var(--red);
+}
+
+.device-details,
+.can-details {
+  margin: 0;
+}
+
+.device-details > div,
+.can-details > div {
+  min-height: 37px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+}
+
+.device-details > div:first-child,
+.can-details > div:first-child {
+  border-top: 1px solid var(--border);
+}
+
+.device-details dt,
+.can-details dt {
+  color: var(--muted);
+}
+
+.device-details dd,
+.can-details dd {
+  margin: 0;
+  color: #d7dee8;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.can-details {
+  margin-top: 23px;
+}
+
+.can-tile .state-badge {
+  color: var(--yellow);
+  background: #282318;
+}
+
+.api-error {
+  margin: 12px 0 0;
+  color: var(--red);
+  font-size: 11px;
+}
+
+.can-tile .state-badge.status-online {
+  color: var(--green);
+  background: #192820;
+}
+
+.can-tile .state-badge.status-offline {
+  color: var(--red);
+  background: #291d20;
+}
+
+:root[data-mode="master"] .tile {
+  border-radius: 5px;
+}
+
+:root[data-mode="master"] .reading {
+  border-radius: 3px;
 }
 
 main {
@@ -428,6 +718,10 @@ h2 {
   main {
     padding-top: 38px;
   }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 560px) {
@@ -437,20 +731,22 @@ h2 {
 
   .topbar {
     min-height: 65px;
+    padding: 12px 0;
+    align-items: flex-start;
+    flex-direction: column;
   }
 
-  .topbar-meta {
-    gap: 10px;
+  .topbar-actions {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
     font-size: 11px;
   }
 
-  .connection-label {
-    font-size: 0;
-  }
-
-  .connection-dot {
-    width: 9px;
-    height: 9px;
+  .controller-status {
+    padding: 0 7px;
+    gap: 5px;
   }
 
   main {
@@ -467,6 +763,15 @@ h2 {
   .page-description {
     max-width: 280px;
     line-height: 1.5;
+  }
+
+  .tile {
+    padding: 17px;
+  }
+
+  .node-layout {
+    grid-template-columns: 1fr;
+    gap: 18px;
   }
 
   .overview-grid {

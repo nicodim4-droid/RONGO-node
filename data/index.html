@@ -4,128 +4,104 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#11161d">
-  <title>RONGO SCADA — Обзор системы</title>
+  <title>RONGO — Панель управления</title>
+  <link rel="alternate" hreflang="ru" href="/">
+  <link rel="alternate" hreflang="en" href="/en/">
   <link rel="stylesheet" href="/style.css">
   <script src="/app.js" defer></script>
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <a class="brand" href="/" aria-label="RONGO SCADA — главная">
+      <a class="brand" href="/" aria-label="RONGO — панель управления">
         <span class="brand-mark" aria-hidden="true">R</span>
-        <span class="brand-copy">
-          <strong>RONGO</strong>
-          <span>SCADA</span>
-        </span>
+        <strong class="brand-name" id="device-title">RONGO-node</strong>
       </a>
-      <div class="topbar-meta">
-        <span class="connection-label"><span class="connection-dot"></span> Локальная сеть</span>
-        <span class="topbar-divider" aria-hidden="true"></span>
+      <div class="topbar-actions">
+        <span class="controller-status status-pending" id="controller-status" role="status" aria-live="polite">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="controller-status-text">Подключение...</span>
+        </span>
+        <div class="mode-switch" role="group" aria-label="Профиль интерфейса">
+          <button class="mode-button" type="button" data-mode="node" aria-pressed="true">NODE</button>
+          <button class="mode-button" type="button" data-mode="master" aria-pressed="false">MASTER</button>
+        </div>
         <time id="clock">--:--:--</time>
+        <nav class="language-switch" aria-label="Язык страницы">
+          <a href="/" aria-current="page">RU</a>
+          <span aria-hidden="true">/</span>
+          <a href="/en/">EN</a>
+        </nav>
       </div>
     </header>
 
     <main>
       <section class="page-heading" aria-labelledby="page-title">
         <div>
-          <p class="eyebrow">МОНИТОРИНГ ОБОРУДОВАНИЯ</p>
-          <h1 id="page-title">Обзор системы</h1>
-          <p class="page-description">Состояние устройства и параметры окружающей среды</p>
-        </div>
-        <div class="system-status status-pending" id="system-status" role="status" aria-live="polite">
-          <span class="status-dot" aria-hidden="true"></span>
-          <span class="status-text" id="system-status-text">Подключение...</span>
+          <p class="eyebrow">RONGO · УПРАВЛЕНИЕ УЗЛОМ</p>
+          <h1 id="page-title">ПАНЕЛЬ УПРАВЛЕНИЯ</h1>
+          <p class="api-error" id="api-error" role="alert" hidden></p>
         </div>
       </section>
 
-      <section class="overview-grid" aria-label="Параметры системы">
-        <article class="metric-card">
-          <div class="metric-heading">
-            <span class="metric-label">Температура</span>
-            <span class="metric-icon" aria-hidden="true">°C</span>
-          </div>
-          <p class="metric-value"><span id="temperature">—</span><span class="metric-unit">°C</span></p>
-          <p class="metric-caption" id="temperature-caption">Ожидание данных датчика</p>
-        </article>
-
-        <article class="metric-card">
-          <div class="metric-heading">
-            <span class="metric-label">Влажность</span>
-            <span class="metric-icon" aria-hidden="true">%</span>
-          </div>
-          <p class="metric-value"><span id="humidity">—</span><span class="metric-unit">%</span></p>
-          <p class="metric-caption" id="humidity-caption">Ожидание данных датчика</p>
-        </article>
-
-        <article class="metric-card">
-          <div class="metric-heading">
-            <span class="metric-label">Время работы</span>
-            <span class="metric-icon icon-text" aria-hidden="true">UP</span>
-          </div>
-          <p class="metric-value metric-value-text" id="uptime">—</p>
-          <p class="metric-caption">С момента запуска устройства</p>
-        </article>
-
-        <article class="metric-card">
-          <div class="metric-heading">
-            <span class="metric-label">Сигнал Wi-Fi</span>
-            <span class="metric-icon icon-text" aria-hidden="true">RF</span>
-          </div>
-          <p class="metric-value"><span id="rssi">—</span><span class="metric-unit">dBm</span></p>
-          <p class="metric-caption">Уровень сигнала точки доступа</p>
-        </article>
-      </section>
-
-      <section class="details-grid" aria-label="Сведения об устройстве">
-        <article class="panel">
-          <div class="panel-heading">
+      <section class="dashboard-grid" aria-label="Панель состояния системы">
+        <article class="tile node-tile" aria-labelledby="node-heading">
+          <header class="tile-heading">
             <div>
-              <p class="eyebrow">УСТРОЙСТВО</p>
-              <h2>Состояние оборудования</h2>
+              <p class="eyebrow">УЗЕЛ</p>
+              <h2 id="node-heading">Состояние узла</h2>
             </div>
-            <span class="state-badge state-pending" id="sensor-status">Ожидание</span>
+            <span class="state-badge status-pending" id="node-status">Ожидание данных</span>
+          </header>
+
+          <div class="node-layout">
+            <section class="sensor-overview" aria-label="Показания датчика">
+              <div class="sensor-kind">
+                <span id="device-type">Температурный узел</span>
+                <strong id="sensor-type">SHT40</strong>
+              </div>
+              <div class="reading-grid">
+                <div class="reading">
+                  <span class="reading-label">Температура</span>
+                  <div><strong class="reading-value" id="temperature">Нет данных</strong><span class="metric-unit">°C</span></div>
+                </div>
+                <div class="reading">
+                  <span class="reading-label">Влажность</span>
+                  <div><strong class="reading-value" id="humidity">Нет данных</strong><span class="metric-unit">%</span></div>
+                </div>
+              </div>
+              <p class="sensor-state status-pending" id="sensor-status" role="status">Ожидание датчика</p>
+            </section>
+
+            <dl class="device-details">
+              <div><dt>Имя узла</dt><dd id="node-name">RONGO-node</dd></div>
+              <div><dt>Артикул</dt><dd id="node-article">Нет данных</dd></div>
+              <div><dt>IP-адрес</dt><dd id="device-ip">Нет данных</dd></div>
+              <div><dt>Время работы</dt><dd id="uptime">Нет данных</dd></div>
+              <div><dt>Wi-Fi RSSI</dt><dd id="wifi-rssi">Нет данных</dd></div>
+            </dl>
           </div>
-          <dl class="device-list">
-            <div class="device-row">
-              <dt>Устройство</dt>
-              <dd id="device-name">RONGO</dd>
+        </article>
+
+        <article class="tile can-tile" aria-labelledby="can-heading">
+          <header class="tile-heading">
+            <div>
+              <p class="eyebrow">CAN BUS</p>
+              <h2 id="can-heading">Шина и обмен данными</h2>
             </div>
-            <div class="device-row">
-              <dt>IP-адрес</dt>
-              <dd id="device-ip">192.168.4.1</dd>
-            </div>
-            <div class="device-row">
-              <dt>Версия прошивки</dt>
-              <dd id="firmware">—</dd>
-            </div>
-            <div class="device-row">
-              <dt>Датчик среды</dt>
-              <dd id="sensor-detail">Нет данных</dd>
-            </div>
+            <span class="state-badge status-pending" id="can-status">Ожидание</span>
+          </header>
+          <dl class="can-details">
+            <div><dt>Обнаружено узлов</dt><dd id="can-nodes">Ожидание</dd></div>
+            <div><dt>Обмен данными</dt><dd id="can-exchange">Ожидание</dd></div>
           </dl>
-        </article>
-
-        <article class="panel update-panel">
-          <div class="panel-heading">
-            <div>
-              <p class="eyebrow">СВЯЗЬ</p>
-              <h2>Обновление данных</h2>
-            </div>
-            <span class="refresh-mark" aria-hidden="true">↻</span>
-          </div>
-          <p class="update-description">Показания обновляются автоматически при подключении к устройству.</p>
-          <div class="update-footer">
-            <span>Последнее обновление</span>
-            <time id="last-update">Ожидание</time>
-          </div>
-          <p class="connection-error" id="connection-error" role="status" hidden></p>
         </article>
       </section>
     </main>
 
     <footer class="footer">
-      <span>RONGO SCADA</span>
-      <span>Панель локального мониторинга</span>
+      <span>RONGO</span>
+      <span>Локальная панель управления</span>
     </footer>
   </div>
 </body>

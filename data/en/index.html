@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11161d">
+  <title>RONGO — Control Panel</title>
+  <link rel="alternate" hreflang="ru" href="/">
+  <link rel="alternate" hreflang="en" href="/en/">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="/en/" aria-label="RONGO control panel">
+        <span class="brand-mark" aria-hidden="true">R</span>
+        <strong class="brand-name" id="device-title">RONGO-node</strong>
+      </a>
+      <div class="topbar-actions">
+        <span class="controller-status status-pending" id="controller-status" role="status" aria-live="polite">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="controller-status-text">Connecting...</span>
+        </span>
+        <div class="mode-switch" role="group" aria-label="Interface profile">
+          <button class="mode-button" type="button" data-mode="node" aria-pressed="true">NODE</button>
+          <button class="mode-button" type="button" data-mode="master" aria-pressed="false">MASTER</button>
+        </div>
+        <time id="clock">--:--:--</time>
+        <nav class="language-switch" aria-label="Page language">
+          <a href="/">RU</a>
+          <span aria-hidden="true">/</span>
+          <a href="/en/" aria-current="page">EN</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="page-heading" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">RONGO · NODE CONTROL</p>
+          <h1 id="page-title">CONTROL PANEL</h1>
+          <p class="api-error" id="api-error" role="alert" hidden></p>
+        </div>
+      </section>
+
+      <section class="dashboard-grid" aria-label="System status dashboard">
+        <article class="tile node-tile" aria-labelledby="node-heading">
+          <header class="tile-heading">
+            <div>
+              <p class="eyebrow">NODE</p>
+              <h2 id="node-heading">Node status</h2>
+            </div>
+            <span class="state-badge status-pending" id="node-status">Waiting for data</span>
+          </header>
+
+          <div class="node-layout">
+            <section class="sensor-overview" aria-label="Sensor readings">
+              <div class="sensor-kind">
+                <span id="device-type">Temperature node</span>
+                <strong id="sensor-type">SHT40</strong>
+              </div>
+              <div class="reading-grid">
+                <div class="reading">
+                  <span class="reading-label">Temperature</span>
+                  <div><strong class="reading-value" id="temperature">NO DATA</strong><span class="metric-unit">°C</span></div>
+                </div>
+                <div class="reading">
+                  <span class="reading-label">Humidity</span>
+                  <div><strong class="reading-value" id="humidity">NO DATA</strong><span class="metric-unit">%</span></div>
+                </div>
+              </div>
+              <p class="sensor-state status-pending" id="sensor-status" role="status">Waiting for sensor</p>
+            </section>
+
+            <dl class="device-details">
+              <div><dt>Node name</dt><dd id="node-name">RONGO-node</dd></div>
+              <div><dt>Part number</dt><dd id="node-article">NO DATA</dd></div>
+              <div><dt>IP address</dt><dd id="device-ip">NO DATA</dd></div>
+              <div><dt>Uptime</dt><dd id="uptime">NO DATA</dd></div>
+              <div><dt>Wi-Fi RSSI</dt><dd id="wifi-rssi">NO DATA</dd></div>
+            </dl>
+          </div>
+        </article>
+
+        <article class="tile can-tile" aria-labelledby="can-heading">
+          <header class="tile-heading">
+            <div>
+              <p class="eyebrow">CAN BUS</p>
+              <h2 id="can-heading">Bus and data exchange</h2>
+            </div>
+            <span class="state-badge status-pending" id="can-status">WAITING</span>
+          </header>
+          <dl class="can-details">
+            <div><dt>Discovered nodes</dt><dd id="can-nodes">WAITING</dd></div>
+            <div><dt>Data exchange</dt><dd id="can-exchange">WAITING</dd></div>
+          </dl>
+        </article>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>RONGO</span>
+      <span>Local control panel</span>
+    </footer>
+  </div>
+</body>
+</html>
